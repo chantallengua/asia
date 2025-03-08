@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbyGDzAe9gBsgVqPWFN4dnWNJWDnR6ZFDNf1DNwPy7GwOplx3CiLc71QKqoGEfInkj8q_A/exec";  // Sostituisci con il tuo URL Apps Script
+const API_URL = "https://script.google.com/macros/s/AKfycbxHgipwsNYzVLJNvaOUytgpZb4LzwfRVQsIqDYdg95fiCL6ogleMvEegvb1ZZ-IHCKOoA/exec";  // Sostituisci con il tuo URL Apps Script
 
 // Funzione per ottenere i dati dell'asta
 async function getAstaItems() {
