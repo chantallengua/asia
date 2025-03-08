@@ -1,0 +1,6 @@
+body { font-family: Arial, sans-serif; text-align: center; }
+.item { border: 1px solid #ddd; padding: 10px; margin: 10px; display: inline-block; }
+img { max-width: 150px; }
+button { background-color: green; color: white; padding: 5px 10px; border: none; cursor: pointer; }
+button:disabled { background-color: gray; }
+
