@@ -1,38 +1,74 @@
-async function loadItems() {
-    const response = await fetch("https://script.google.com/macros/s/AKfycbwSCGNjGokwO3RR9IMJ8zV-b4tpaE709mItRQwhOWp1RLXvxLJ4n1RQV-n3SWfZDSL1Hg/exec");
-    const items = await response.json();
+const API_URL = "https://script.google.com/macros/s/AKfycbyGDzAe9gBsgVqPWFN4dnWNJWDnR6ZFDNf1DNwPy7GwOplx3CiLc71QKqoGEfInkj8q_A/exec";  // Sostituisci con il tuo URL Apps Script
 
-    let html = "";
+// Funzione per ottenere i dati dell'asta
+async function getAstaItems() {
+    try {
+        const response = await fetch(API_URL);
+        const items = await response.json();
+        displayItems(items);
+    } catch (error) {
+        console.error("Errore nel caricamento dei dati dell'asta:", error);
+    }
+}
+
+// Funzione per mostrare gli oggetti in asta nella pagina
+function displayItems(items) {
+    const container = document.getElementById("auction-items");
+    container.innerHTML = ""; 
+
     items.forEach(item => {
-        html += `<div class="item">
-            <h2>${item.titolo}</h2>
-            <img src="${item.immagine}" width="100">
+        const itemElement = document.createElement("div");
+        itemElement.classList.add("auction-item");
+        itemElement.innerHTML = `
+            <img src="${item.immagine}" alt="${item.titolo}" class="item-image">
+            <h3>${item.titolo}</h3>
             <p>${item.descrizione}</p>
-            <p>Prezzo attuale: <span class="price">${item.prezzo}</span>€</p>
-            <p><strong>${item.aperta ? "🟢 Asta Aperta" : "🔴 Asta Chiusa"}</strong></p>
-            ${item.aperta ? `<button onclick="placeBid(${item.id})">Fai un'offerta</button>` : ""}
-        </div>`;
+            <p>Prezzo attuale: <strong>${item.prezzo}€</strong></p>
+            <p>Ultimo offerente: ${item.migliorOfferente}</p>
+            <input type="number" id="bid-${item.id}" placeholder="Fai un'offerta">
+            <button onclick="sendBid(${item.id})">Invia offerta</button>
+        `;
+        container.appendChild(itemElement);
     });
-
-    document.getElementById("items").innerHTML = html;
 }
 
-async function placeBid(itemId) {
-    let offerta = prompt("Inserisci la tua offerta:");
-    let email = prompt("Inserisci la tua email:");
+// Funzione per inviare un'offerta
+async function sendBid(id) {
+    const bidInput = document.getElementById(`bid-${id}`);
+    const offerta = parseFloat(bidInput.value);
+    const email = prompt("Inserisci la tua email per confermare l'offerta:");
 
-    if (!offerta || !email) return alert("Inserisci tutti i dati!");
+    if (!offerta || offerta <= 0 || !email) {
+        alert("Inserisci un'offerta valida e un'email.");
+        return;
+    }
 
-    let response = await fetch("https://script.google.com/macros/s/XXXXX/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: itemId, offerta: Number(offerta), email })
-    });
+    try {
+        // Prima eseguiamo una richiesta OPTIONS per abilitare CORS
+        await fetch(API_URL, { method: "OPTIONS" });
 
-    let result = await response.text();
-    if (result === "Success") alert("Offerta registrata con successo!");
-    else alert(result);
+        // Ora inviamo l'offerta
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id, offerta, email })
+        });
+
+        const text = await response.text();
+        if (text === "Success") {
+            alert(`Offerta inviata con successo: ${offerta}€ per l'oggetto ${id}`);
+            getAstaItems(); // Aggiorna i dati
+        } else {
+            alert("Errore: " + text);
+        }
+    } catch (error) {
+        console.error("Errore nell'invio dell'offerta:", error);
+        alert("Errore nell'invio dell'offerta. Riprova.");
+    }
 }
 
-loadItems();
+// Carica gli oggetti dell'asta al caricamento della pagina
+window.onload = getAstaItems;
 
